@@ -16,6 +16,36 @@ CSV 7개(약 16 GB)를 값이 바뀌지 않는 Parquet으로 한 번 변환해, 
 
 ## 3. 구현 방법
 
+**입력**
+
+| 입력 | 읽는 부분 | 쓰이는 곳 |
+|---|---|---|
+| `DATA/raw/bosch/sample_submission.csv` (10.8 MiB) | 전체 컬럼·전체 행(스트리밍). 검증 때는 `csv` 모듈로 전체를 한 번 더 순회 | 변환 대상, 검증의 기준 |
+| `DATA/raw/bosch/train_numeric.csv` (1.99 GiB) | 전체 컬럼·전체 행(스트리밍). 검증 때는 `csv` 모듈로 전체를 한 번 더 순회 | 변환 대상, 검증의 기준 |
+| `DATA/raw/bosch/test_numeric.csv` (1.99 GiB) | 전체 컬럼·전체 행(스트리밍). 검증 때는 `csv` 모듈로 전체를 한 번 더 순회 | 변환 대상, 검증의 기준 |
+| `DATA/raw/bosch/train_date.csv` (2.69 GiB) | 전체 컬럼·전체 행(스트리밍). 검증 때는 `csv` 모듈로 전체를 한 번 더 순회 | 변환 대상, 검증의 기준 |
+| `DATA/raw/bosch/test_date.csv` (2.69 GiB) | 전체 컬럼·전체 행(스트리밍). 검증 때는 `csv` 모듈로 전체를 한 번 더 순회 | 변환 대상, 검증의 기준 |
+| `DATA/raw/bosch/train_categorical.csv` (2.49 GiB) | 전체 컬럼·전체 행(스트리밍). 검증 때는 `csv` 모듈로 전체를 한 번 더 순회 | 변환 대상, 검증의 기준 |
+| `DATA/raw/bosch/test_categorical.csv` (2.49 GiB) | 전체 컬럼·전체 행(스트리밍). 검증 때는 `csv` 모듈로 전체를 한 번 더 순회 | 변환 대상, 검증의 기준 |
+| `DATA/raw/bosch/MANIFEST.json`(2단계 산출) | CSV의 크기, SHA-256, 컬럼 수 | 재다운로드한 CSV가 원본과 같은지 확인(`DATA_ACQUISITION.md` 4절 표와 대조) |
+| `EDA_PLAN.md` 3.1절 | 자료형, 엄격 파싱, 검증 규칙 | 설계 기준 |
+
+**출력**
+
+| 출력 | 내용 | Git | 쓰이는 곳 |
+|---|---|---|---|
+| `DATA/raw/bosch_parquet/sample_submission.parquet` (1.2 MiB) | `sample_submission.csv`와 같은 값의 Parquet | 무시 | 3-2 이후 분석 |
+| `DATA/raw/bosch_parquet/train_numeric.parquet` (0.30 GiB) | `train_numeric.csv`와 같은 값의 Parquet | 무시 | 3-2 이후 분석 |
+| `DATA/raw/bosch_parquet/test_numeric.parquet` (0.30 GiB) | `test_numeric.csv`와 같은 값의 Parquet | 무시 | 3-2 이후 분석 |
+| `DATA/raw/bosch_parquet/train_date.parquet` (0.77 GiB) | `train_date.csv`와 같은 값의 Parquet | 무시 | 3-2 이후 분석 |
+| `DATA/raw/bosch_parquet/test_date.parquet` (0.77 GiB) | `test_date.csv`와 같은 값의 Parquet | 무시 | 3-2 이후 분석 |
+| `DATA/raw/bosch_parquet/train_categorical.parquet` (0.04 GiB) | `train_categorical.csv`와 같은 값의 Parquet | 무시 | 3-2 이후 분석 |
+| `DATA/raw/bosch_parquet/test_categorical.parquet` (0.04 GiB) | `test_categorical.csv`와 같은 값의 Parquet | 무시 | 3-2 이후 분석 |
+| `DATA/raw/bosch_parquet/MANIFEST.json` | 파일별 크기, 변환·검증 시간, 피크 메모리, 검증 결과, `Response` 값 개수 | 무시 | 3-2 Q1의 파싱 무결성 인용 |
+| `scripts/convert_bosch_to_parquet.py` | 변환·검증 스크립트 | 추적(커밋 `3963456`) | 재현 |
+
+**방법**
+
 - polars `scan_csv`(전체 스키마 명시, `ignore_errors=False`) → `sink_parquet`(zstd, 행 그룹 50,000행). 스트리밍이라 전체를 메모리에 올리지 않는다.
 - 자료형: `Id`=Int64, `Response`=Int8, numeric/date 값=Float64, categorical 값=Utf8. CSV의 빈 필드는 null이 된다.
 - 검증은 CSV 원문을 `csv` 모듈로 한 번 훑어 변환 결과와 독립적으로 비교한다. 시드는 `20261105`.

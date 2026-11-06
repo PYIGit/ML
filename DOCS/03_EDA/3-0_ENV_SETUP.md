@@ -16,6 +16,25 @@ EDA 구현(3-1 이후)에 필요한 의존성과 `src/ml` import 설정을 준�
 
 ## 3. 구현 방법
 
+**입력**
+
+| 입력 | 읽는 부분 | 쓰이는 곳 |
+|---|---|---|
+| `EDA_PLAN.md` 3.4절·3.5절, 8절 결정 1~3, 5 | 승인된 의존성 목록, 빌드 설정 방식, Git 무시 규칙 | 변경 범위의 기준 |
+| 기존 `pyproject.toml`, `.gitignore`, `uv.lock` | 단계 1에서 만든 설정. 의존성은 `dependencies = []`로 비어 있었음 | 변경 대상 |
+
+**출력**
+
+| 출력 | 내용 | Git | 쓰이는 곳 |
+|---|---|---|---|
+| `pyproject.toml` | 본 의존성 3개, dev 의존성 2개, hatchling 빌드 설정 | 추적 | 3-1 이후 모든 단계 |
+| `uv.lock` | 잠금 파일 갱신(+1,231줄) | 추적 | 환경 재현 |
+| `.gitignore` | `DATA/raw/bosch_parquet/` 1줄 추가 | 추적 | 3-1 변환본 보호 |
+| `DIRECTORY_STRUCTURE.md` | 변환본 위치와 `raw/` 규칙(커밋 `3b0413e`) | 추적 | 구조 참조 |
+| `.venv/` | `uv sync` 결과(로컬 실행 환경) | 무시 | 모든 스크립트·노트북 실행 |
+
+**방법**
+
 - `pyproject.toml`에 의존성 추가: 본 의존성 polars, pandas, pyarrow / dev 의존성 matplotlib, ipykernel
 - `pyproject.toml`에 빌드 설정 추가: hatchling, wheel 대상 `src/ml`. `uv sync` 시 `ml`이 editable로 설치된다.
 - `.gitignore`에 `DATA/raw/bosch_parquet/` 추가. 기존 `DATA/`, `DATA/raw/bosch/`와 함께 이중 장치가 된다.
@@ -75,6 +94,7 @@ EDA 구현(3-1 이후)에 필요한 의존성과 `src/ml` import 설정을 준�
 | 날짜 | 문제 | 해결 아이디어 | 결과 |
 |---|---|---|---|
 | 2026-11-05 (사후 발견) | `git status`에 9개 파일이 수정됨으로 표시된다. `git diff --ignore-cr-at-eol`로 보면 실제 내용 변경은 없다. 인덱스는 LF, 워킹 트리는 CRLF이고(`git ls-files --eol`), `core.autocrlf`는 설정되어 있지 않다 | 후보 두 가지: `.gitattributes`(`* text=auto eol=lf` 등)로 저장소 차원에서 줄바꿈을 고정 / 로컬 `core.autocrlf=input` 설정. 어느 쪽도 적용하지 않았다 | **미해결(원인 확인까지).** 수정 표시된 파일 중 `pyproject.toml`, `uv.lock`, `.gitignore`는 이 단계의 파일이다. 커밋할 때 줄바꿈이 섞이지 않게 정리 방법을 정해야 한다 |
+| 2026-11-06 (3-2에서 발견) | `.gitignore`의 `DATA/` 규칙이 `core.ignorecase=true` 환경에서 `src/ml/data/`까지 무시함. 3-0에서 추가한 이중 장치 규칙과 같은 파일의 결함 | `DATA/`를 `/DATA/`(루트 기준)로 고침. 상세는 `3-2_STRUCTURE_AND_TARGET.md` 6절 | **해결.** 임시 저장소에서 검증함 |
 
 
 
