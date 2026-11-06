@@ -1,5 +1,5 @@
 # ---- 데이터 및 산출물 (Bosch 원본은 재배포 금지, 절대 커밋하지 않음) ----
-DATA/
+/DATA/
 # 이중 장치: 위 DATA/ 를 주석 처리해 산출물을 올리더라도 Bosch 원본은 계속 무시
 DATA/raw/bosch/
 DATA/raw/bosch_parquet/
