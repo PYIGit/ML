@@ -298,7 +298,52 @@ def stage_pred_point() -> None:
          "share_of_numeric_values_recorded_median": 1.0, "share_recorded_p10": 1.0, "share_recorded_p90": 1.0,
          "remaining_time_median": 0.0, "remaining_time_p10": 0.0, "wait_before_l3_median": None, "time_in_l3_median": None},
     ]
-    pl.DataFrame(rows).write_csv(OUT / "prediction_point_summary.csv")
+    # "L2에 들어가기 전": L0 또는 L1을 마치고 L2로 가는 부품만 해당한다
+    pre2_cols = [s_ for s_ in counts.columns if s_.startswith(("L0_", "L1_"))]
+    l2_cols = [s_ for s_ in counts.columns if s_.startswith("L2_")]
+    c2 = counts.select(pl.sum_horizontal(pre2_cols).alias("pre2"), pl.sum_horizontal(l2_cols).alias("l2"))
+    pre2, l2 = c2["pre2"].to_numpy().astype(np.int64), c2["l2"].to_numpy().astype(np.int64)
+    in2 = (pre2 > 0) & (l2 > 0)
+    share2 = share_recorded_before(pre2, pre + l3)
+    t2 = tr.select(
+        pl.max_horizontal([pl.col(f"{s_}_tmax") for s_ in st if s_.startswith(("L0_", "L1_"))]).alias("pre2_last"),
+        pl.max_horizontal([pl.col(f"{s_}_tmax") for s_ in st]).alias("t_last"),
+    ).with_columns((pl.col("t_last") - pl.col("pre2_last")).alias("remain")).filter(pl.Series(in2))
+    rows.insert(0, {"point": "before_L2", "n_parts": int(in2.sum()), "k": int(resp[in2].sum()),
+                    "share_of_numeric_values_recorded_median": float(np.median(share2[in2])),
+                    "share_recorded_p10": float(np.percentile(share2[in2], 10)),
+                    "share_recorded_p90": float(np.percentile(share2[in2], 90)),
+                    "remaining_time_median": float(t2["remain"].median()),
+                    "remaining_time_p10": float(t2["remain"].quantile(0.1)),
+                    "wait_before_l3_median": None, "time_in_l3_median": None,
+                    "values_before_median": float(np.median(pre2[in2])),
+                    "values_total_median": float(np.median((pre + l3)[in2]))})
+    rows[1]["values_before_median"] = float(np.median(pre[both]))
+    rows[1]["values_total_median"] = float(np.median((pre + l3)[both]))
+    rows[2]["values_before_median"] = float(np.median((pre + l3)[(pre + l3) > 0]))
+    rows[2]["values_total_median"] = rows[2]["values_before_median"]
+    pl.DataFrame(rows, infer_schema_length=None).write_csv(OUT / "prediction_point_summary.csv")
+    # 같은 부품끼리 비교: L2를 거치는 부품과 거치지 않는 부품을 나눠 시점별 측정값 수와 남은 시간
+    remain3 = t["remain_after_pre"].to_numpy()
+    remain2 = tr.select((pl.max_horizontal([pl.col(f"{s_}_tmax") for s_ in st])
+                         - pl.max_horizontal([pl.col(f"{s_}_tmax") for s_ in st if s_.startswith(("L0_", "L1_"))]))
+                        .alias("r")).to_series().to_numpy()
+    total = pre + l3
+    g_l2 = in2 & (l3 > 0)
+    g_no = both & (l2 == 0)
+    by_group = []
+    for name, g in (("through_L2", g_l2), ("not_through_L2", g_no)):
+        by_group.append({
+            "group": name, "n_parts": int(g.sum()), "k": int(resp[g].sum()),
+            "values_before_L2_median": float(np.median(pre2[g])) if name == "through_L2" else None,
+            "remaining_after_before_L2_median": float(np.nanmedian(remain2[g])) if name == "through_L2" else None,
+            "values_before_L3_median": float(np.median(pre[g])),
+            "remaining_after_before_L3_median": float(np.nanmedian(remain3[g])),
+            "values_total_median": float(np.median(total[g]))})
+    pl.DataFrame(by_group, infer_schema_length=None).write_csv(OUT / "prediction_point_by_group.csv")
+    update_summary("pred_point_by_group", {"groups": by_group, "parts_through_L2_total": int(in2.sum()),
+                                           "parts_starting_at_L2": int((both & (l2 > 0) & (pre2 == 0)).sum())})
+    print(json.dumps(by_group, ensure_ascii=False, indent=1))
     res = {"points": rows, "parts_only_l3": int(only_l3.sum()), "defects_only_l3": int(resp[only_l3].sum()),
            "parts_no_l3": int(only_pre.sum()), "defects_no_l3": int(resp[only_pre].sum()),
            "n_numeric_columns_pre_l3": sum(len(groups[s]) for s in pre_cols),
