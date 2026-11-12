@@ -1,7 +1,7 @@
 # 단계 3 설계: 데이터 구조 탐색 및 EDA
 
 - 작성일: 2026-10-22
-- 상태: 설계 승인됨(2026-11-01). 3-0 ~ 3-5 완료(기록: `3-0_ENV_SETUP.md`, `3-1_PARQUET_CONVERSION.md`, `3-2_STRUCTURE_AND_TARGET.md`, `3-3_MISSINGNESS_AND_ROUTES.md`, `3-4_TIME_STRUCTURE.md`, `3-5_NUMERIC_AND_CATEGORICAL.md`)
+- 상태: 설계 승인됨(2026-11-01). 단계 3 완료(2026-11-12). 3-0 ~ 3-7 완료(기록: `3-0_ENV_SETUP.md`, `3-1_PARQUET_CONVERSION.md`, `3-2_STRUCTURE_AND_TARGET.md`, `3-3_MISSINGNESS_AND_ROUTES.md`, `3-4_TIME_STRUCTURE.md`, `3-5_NUMERIC_AND_CATEGORICAL.md`, `3-6_LEAKAGE_AND_TRAIN_TEST.md`, `3-7_SUMMARY_FOR_STAGE4.md`). 결과 요약은 `EDA_FINDINGS.md`
 - 변경: 2026-10-25 재검토에서 데이터 무결성, 결측 유형 구분, 시간 패턴, 중복 행, 소표본 통계 주의 항목 추가 (9절 참고). 2026-11-11 남은 단계(Q5 ~ Q7)에서 결정에 쓰이지 않는 항목 삭제, 보고 원칙 추가 (3.7절, 10절 참고)
 - 관련 문서: `DOCS/ROADMAP.md`, `DOCS/02_DATA/DATA_ACQUISITION.md`
 - 입력: `DATA/raw/bosch/*.csv` (7개, 약 16 GB)
