@@ -98,18 +98,21 @@ ax.text(13.6, 16.05, "② L2: 일부만 거친다", fontsize=14, fontweight="bol
 panel(13.6, 5.6, 17.0, 10.4, "L2", "L2", "부품의 30%")
 column(15.3, 7.25, ["S26", "S27", "S28"], "L2")
 
-# 진입 -> L3 직행(위쪽 굵은 길), 진입 -> L2
-YB = 13.6  # 직행 길 높이
-ax.add_patch(FancyBboxPatch((12.4, YB - 0.42), 5.9, 0.84, boxstyle="square,pad=0", fc="#e6e5e1", ec="none", zorder=1))
-arrow(12.5, YB, 18.3, YB, color=INK2, lw=2.2, ms=20, z=3)
-ax.text(15.3, YB + 0.55, "70%는 L2를 건너뛰고 바로 L3로", ha="center", va="bottom", fontsize=11.5, color=INK)
+# 진입 -> L3 직행(흐름마다 한 줄), 진입 -> L2. %는 모두 "그 흐름에서 출발한 부품 중" 비율이다
+ax.text(13.6, 15.55, "전체 부품의 30%가 L2를 거치고,\n70%는 L2를 거치지 않고 바로 L3로 간다", ha="left", va="top",
+        fontsize=11.5, color=INK, linespacing=1.5)
+DIRECT = [(13.6, 2.6, "L0 앞쪽 부품의 86%는 바로 L3로"), (10.62, 1.7, "L0 뒤쪽 부품의 91%는 바로 L3로"),
+          (2.4, 1.0, "L1 부품의 8%는 바로 L3로")]
+for y, lw, text in DIRECT:
+    ax.plot([12.4, 18.3], [y, y], color=INK2, lw=lw, zorder=2, solid_capstyle="butt")
+    ax.text(15.3, y + 0.13, text, ha="center", va="bottom", fontsize=10.5, color=INK)
 arrow(12.4, 12.3, 13.6, 9.6, color=C["L2"], lw=1.4, ms=12, rad=-0.15)
 arrow(12.4, 8.3, 13.6, 8.3, color=C["L2"], lw=1.2, ms=12)
 arrow(12.4, 3.7, 13.6, 6.4, color=C["L2"], lw=3.0, ms=16, rad=0.15)
-ax.text(13.0, 11.65, "14%", ha="right", va="center", fontsize=10.5, color=INK2)
-ax.text(13.0, 8.62, "9%", ha="center", va="bottom", fontsize=10.5, color=INK2)
-ax.text(12.95, 4.35, "92%", ha="left", va="top", fontsize=10.5, color=INK2)
-ax.text(15.3, 5.3, "L1 부품은 92%가 L2를 거치고\nL0 부품은 일부(9 ~ 14%)만 거친다\nS28은 부품의 0.8%만 거친다", ha="center", va="top",
+ax.text(12.55, 12.45, "L0 앞쪽\n부품의 14%", ha="left", va="bottom", fontsize=9.5, color=INK2, linespacing=1.3)
+ax.text(12.5, 8.42, "L0 뒤쪽\n부품의 9%", ha="left", va="bottom", fontsize=9.5, color=INK2, linespacing=1.3)
+ax.text(12.55, 3.5, "L1\n부품의 92%", ha="left", va="top", fontsize=9.5, color=INK2, linespacing=1.3)
+ax.text(15.6, 5.3, "초록 화살표의 %: 그 흐름의\n부품 중 L2를 거치는 비율\nS28은 부품의 0.8%만 거친다", ha="center", va="top",
         fontsize=10.5, color=INK2, linespacing=1.5)
 arrow(17.0, 8.0, 18.3, 8.0, color=C["L2"], lw=1.6, ms=13)
 
@@ -117,7 +120,7 @@ arrow(17.0, 8.0, 18.3, 8.0, color=C["L2"], lw=1.6, ms=13)
 ax.text(19.2, 16.05, "③ L3: 두 흐름 중 하나를 거친다 (거의 모든 부품이 L3를 거침)", fontsize=14, fontweight="bold",
         color=INK, va="bottom")
 # 분기 기둥
-ax.plot([18.3, 18.3], [3.9, 13.6], color=INK2, lw=2.2, zorder=2, solid_capstyle="round")
+ax.plot([18.3, 18.3], [2.4, 13.6], color=INK2, lw=2.2, zorder=2, solid_capstyle="round")
 arrow(18.3, 12.75, 19.2, 12.75, color=INK2, lw=2.6, ms=18)
 arrow(18.3, 3.9, 19.2, 3.9, color=INK2, lw=1.2, ms=12)
 panel(19.2, 10.4, 35.6, 15.9, "L3", "L3 주 흐름", "부품의 94.6%")
