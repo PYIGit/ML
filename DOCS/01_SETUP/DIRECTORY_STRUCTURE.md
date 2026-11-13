@@ -31,7 +31,8 @@ ML/
 │   └── 12_INTEGRATION/
 │
 ├── DATA/                  # Git 무시. 데이터와 산출물 전부
-│   ├── raw/bosch/         # Bosch 원본. 절대 수정하지 않음. 별도 무시 규칙 적용
+│   ├── raw/bosch/         # Bosch 원본 CSV. 절대 수정하지 않음. 별도 무시 규칙 적용
+│   ├── raw/bosch_parquet/ # 원본의 무손실 Parquet 변환본. 별도 무시 규칙 적용
 │   ├── interim/           # 중간 변환 (예: Parquet 변환본, 샘플)
 │   ├── processed/         # 학습용 피처 테이블
 │   ├── models/            # 저장된 모델 아티팩트
@@ -64,7 +65,8 @@ ML/
 ### 데이터 (`DATA/`)
 
 - `DATA/` 전체가 `.gitignore`에 포함되어 있다. 데이터, 모델, 실험 결과는 Git에 올라가지 않는다.
-- `DATA/raw/bosch/`는 `.gitignore`에 별도로 한 번 더 등록되어 있다. 나중에 산출물을 올리기 위해 `DATA/` 줄을 주석 처리하더라도 Bosch 원본은 계속 무시된다. Kaggle 데이터는 재배포가 허용되지 않기 때문이다.
+- `DATA/raw/bosch/`와 `DATA/raw/bosch_parquet/`는 `.gitignore`에 별도로 한 번 더 등록되어 있다. 나중에 산출물을 올리기 위해 `DATA/` 줄을 주석 처리하더라도 Bosch 원본과 그 직접 변환본은 계속 무시된다. Kaggle 데이터는 재배포가 허용되지 않기 때문이다.
+- `raw/` 아래에는 원본과 원본의 무손실 포맷 변환본만 둔다. 값을 바꾸는 변환(결측 처리, 형 변환, 샘플링)의 결과는 `interim/` 이후에 둔다.
 - `raw/` 아래 파일은 수정하지 않는다. 변환 결과는 `interim/` 또는 `processed/`에 둔다.
 - 원본의 출처, 버전, 파일 목록, 체크섬은 `DOCS/02_DATA/`에 기록한다. `DATA/` 안에는 문서를 두지 않는다.
 
@@ -88,5 +90,5 @@ ML/
 
 ## 4. 미결 사항
 
-- `src/ml`을 import 가능하게 만드는 방식. 현재 `pyproject.toml`은 `uv init --bare`로 만든 가상 프로젝트라 빌드 설정이 없다. 빌드 설정을 추가해 editable 설치하거나, `PYTHONPATH`로 처리하는 방법이 있다. 코드를 처음 작성하는 시점에 결정한다.
+- ~~`src/ml`을 import 가능하게 만드는 방식~~ (2026-11-01 해결: `pyproject.toml`에 hatchling 빌드 설정을 추가해 `uv sync` 시 editable 설치됨. 개발용 의존성은 `[dependency-groups] dev`에 둔다.)
 - `README`를 `README.md`로 바꿀지 여부.
